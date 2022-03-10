@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
 from PIL import ImageGrab
-
-coordinates = {(900, 200, 1000, 400), (910, 200, 1010, 400), (920, 200, 1020, 400), (930, 200, 1030, 400)}
+# left_x, top_y, right_x, bottom_y
+coordinates = {(1170, 530, 1270, 630), (1060, 530, 1150, 630), (950, 530, 1050, 630), (850, 530, 950, 630)}
 
 for idx, val in enumerate(coordinates):
     img = ImageGrab.grab(bbox=(val))  # x, y, w, h
