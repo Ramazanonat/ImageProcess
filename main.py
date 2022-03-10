@@ -1,72 +1,38 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
+import os
 import cv2
-import numpy as np
-from matplotlib import pyplot as plt
 
-# reading image
-img = cv2.imread('images/condo.jpg')
+path = "icons"
+dir_list = sorted(filter(lambda x: os.path.isfile(os.path.join(path, x)), os.listdir(path)))
 
-# converting image into grayscale image
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+for idx, val in enumerate(dir_list):
+    method = cv2.TM_SQDIFF_NORMED
 
-# setting threshold of gray image
-_, threshold = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+    # Read the images from the file
+    small_image = cv2.imread('icons/' + str(dir_list[idx]))
+    large_image = cv2.imread('big.png')
 
-# using a findContours() function
-contours, _ = cv2.findContours(
-    threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    result = cv2.matchTemplate(small_image, large_image, method)
 
-i = 0
+    # We want the minimum squared difference
+    mn, _, mnLoc, _ = cv2.minMaxLoc(result)
 
-# list for storing names of shapes
-for contour in contours:
+    # Draw the rectangle:
+    # Extract the coordinates of our best match
+    MPx, MPy = mnLoc
 
-    # here we are ignoring first counter because
-    # findcontour function detects whole image as shape
-    if i == 0:
-        i = 1
-        continue
+    # Step 2: Get the size of the template. This is the same size as the match.
+    trows, tcols = small_image.shape[:2]
 
-    # cv2.approxPloyDP() function to approximate the shape
-    approx = cv2.approxPolyDP(
-        contour, 0.01 * cv2.arcLength(contour, True), True)
+    # Step 3: Draw the rectangle on large_image
+    print("XT:" + str(MPx),
+          "YT:" + str(MPy),
+          "XB:" + str(MPx + tcols),
+          "YB:" + str(MPy + trows)
+          )
+    cv2.rectangle(large_image, (MPx, MPy), (MPx + tcols, MPy + trows), (0, 0, 255), 2)
 
-    # using drawContours() function
-    cv2.drawContours(img, [contour], 0, (0, 0, 255), 5)
+    # Display the original image with the rectangle around the match.
+    # cv2.imshow('output', large_image)
 
-    # finding center point of shape
-    M = cv2.moments(contour)
-    if M['m00'] != 0.0:
-        x = int(M['m10'] / M['m00'])
-        y = int(M['m01'] / M['m00'])
-
-    # putting shape name at center of each shape
-    if len(approx) == 3:
-        cv2.putText(img, 'Triangle', (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-    elif len(approx) == 4:
-        cv2.putText(img, 'Quadrilateral', (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-    elif len(approx) == 5:
-        cv2.putText(img, 'Pentagon', (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-    elif len(approx) == 6:
-        cv2.putText(img, 'Hexagon', (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-    else:
-        cv2.putText(img, 'circle', (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-# displaying the image after drawing contours
-cv2.imshow('shapes', img)
-
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    # The image is only displayed if we call this
+    # cv2.waitKey(0)
